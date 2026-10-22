@@ -23,10 +23,10 @@ FetchContent_MakeAvailable(googletest)
 
 if (MSVC)
 # warning level 4
-    target_compile_options(j1939 PRIVATE /W4)
+    add_compile_options(/W4)
 else()
 # additional warnings
-    target_compile_options(j1939 PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_subdirectory(src)
