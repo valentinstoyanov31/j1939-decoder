@@ -5,15 +5,15 @@ _Maintained by Claude after each review. Keep it short._
 ## Current
 
 - **Challenge:** 0 — Repo skeleton
-- **Status:** in progress — 3rd review 2026-10-21, verdict **revise** (local build ✅, CI/git ❌)
+- **Status:** in progress — 5th review 2026-10-22, verdict **revise** (local OK; fix not committed, CI empty)
 - **Started:** 2026-10-20
 
 ### Passed so far
 - Static lib `j1939` with `PUBLIC` include dir; test links `PRIVATE`.
 - C++20, extensions off; GoogleTest pinned to a commit via `FetchContent`.
 - `constexpr std::string_view` instead of `#define`; version matches `project(VERSION 1.0)`.
-- Root `ctest --test-dir build` finds and passes 1 test.
-- `-Wall -Wextra -Wpedantic -Werror` on `j1939` and `test_version`, not on GoogleTest.
+- `enable_testing()` before `add_subdirectory(tests)` (root ctest found the test in review 3).
+- Project committed and pushed (`7d5e9ea`).
 
 ## Completed
 
@@ -21,12 +21,15 @@ _(none yet)_
 
 ## Open review points
 
-1. **Blocking:** `src/`, `tests/`, `CMakeLists.txt`, `docs/` still untracked; `origin/main` has only README, .gitignore and an **empty** `.github/workflows/main.yml`.
-2. **Blocking:** write the workflow (push + pull_request, checkout, configure/build/ctest with `--no-tests=error`), get it green, then red on purpose.
-3. Warnings work but via order-dependent `add_compile_options`; move to `target_compile_options` (follow-up, not blocking).
-4. Minor: CMP0135 dev warning, gmock built unused, no `.clang-format`, README is a title, `j1939_version` sits in the global namespace.
+1. **Blocking:** local `CMakeLists.txt` reverted to the working `add_compile_options` version (builds, 1/1 pass, flags correct) but it's **uncommitted**; `origin/main` (`7d5e9ea`) still fails to configure.
+2. **Blocking:** `.github/workflows/main.yml` is still empty. Write it (push + PR, checkout, configure/build/`ctest --no-tests=error`), green, then red on purpose.
+3. Follow-up: warnings are still order-dependent `add_compile_options`; move to a target-based mechanism (function or `INTERFACE` lib) in `src/`/`cmake/`, ideally in challenge 1.
+4. Minor: CMP0135 dev warning, gmock built unused, no `.clang-format`, README is a title, `j1939_version` in global namespace.
+5. Suggested (not required): GoogleTest fetch in `tests/` behind `BUILD_TESTING`, `target_compile_features` instead of global `CMAKE_CXX_STANDARD`.
 
 ## Concepts to revisit
 
-- CMake directory-scoped commands (`add_compile_options`, `enable_testing`) are **order-dependent**. Ordering now fixed; target-scoped options still to learn.
-- Git basics: tracked vs untracked, what CI actually checks out.
+- CMake **targets are objects**: a `target_*` call needs the target to exist (like using a struct before its init). Ownership rule: the file that creates a target configures it.
+- Directory scope vs target scope; variables flow down to subdirectories, not up.
+- Usage requirements `PRIVATE`/`PUBLIC`/`INTERFACE` ≈ `.c`-only / both / header-only.
+- Git: done ✅ (committed + pushed). Next: verify CI actually runs.
